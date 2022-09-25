@@ -1,0 +1,218 @@
+#include<iostream>
+#include<fstream>
+#include<string.h>
+
+using namespace std;
+
+char ans;
+int choice;
+
+void insert_to_file();
+void read_from_file();
+void find_data();
+void update_data();
+
+class Users
+{
+	private:
+		char name[30];
+		int password,id,amount;
+		char location[50];		
+	
+	public:
+		void request_data()
+		{
+			cout<<"\nEnter Name:";
+			cin>>name;
+				
+			cout<<"\nEnter Password:";
+			cin>>password;
+			
+			cout<<"\nEnter Id:";
+			cin>>id;
+			
+			cout<<"\nEnter Amount:";
+			cin>>amount;
+			
+			cout<<"\nEnter Location:";
+			cin>>location;	
+		}
+		
+ 		void show_data()
+		{
+			cout<<"\nName :"<<name<<endl;
+				
+			cout<<"Password :"<<password<<endl;
+			
+			cout<<"Id :"<<id<<endl;
+			
+			cout<<"Amount :"<<amount<<endl;
+			
+			cout<<"Location :"<<location<<endl;
+			
+		}
+		
+		char* getname()
+		{
+			return name;
+		}
+			
+};
+
+
+int main()
+{
+	do{
+		cout<<"\n1 : Input data into File";
+		cout<<"\n2 : Output data from File";
+		cout<<"\n3 : To Find data by name:";
+		cout<<"\n4 : To Update data:";
+		cout<<"\n5 : To Exit from Program:";
+		cout<<"\nEnter : ";
+		cin>>choice;
+		
+		switch(choice)
+		{
+			case 1: insert_to_file();break;
+			case 2:	read_from_file();break;
+			case 3: find_data();break; 
+			case 4: update_data();break;	
+			case 5: cout<<"Bye Bye";
+					exit(0);
+		}
+	}while(true);
+		
+	return 0;
+}
+
+void insert_to_file()
+{
+	Users u;
+	ofstream outfile;
+	
+	do{
+		outfile.open("Users.txt",ios::app);
+		u.request_data();
+		outfile.write((char*)&u,sizeof(u));
+		outfile.close();
+		
+		cout<<"Try again?";cin>>ans;
+	}while(ans=='y');
+	
+}
+
+void read_from_file()
+{
+	Users u;
+	ifstream infile;
+	infile.open("Users.txt",ios::out);
+	infile.seekg(0,ios::end);
+	
+	int pos = infile.tellg();
+	int a = pos / sizeof(u);
+	if(a < 1)
+	{	cout<<"\nNo Patients to show\n";	}
+	
+	if(a>=1)
+	{
+		infile.seekg(0,ios::beg);
+		infile.read((char*)(&u),sizeof(u));
+		
+		while(!infile.eof())
+		{
+			u.show_data();
+			infile.read((char*)(&u),sizeof(u));
+		}
+	}
+}
+
+void find_data()
+{
+	char find_name[20];
+	Users u;
+	char* A = u.getname();
+	
+	ifstream infile;
+	do{
+		int temp = 0;
+		infile.open("Users.txt",ios::out);
+		cout<<"\nEnter Name U want to find:";cin>>find_name;
+		
+		while(infile.read((char*)&u,sizeof(u)))
+		{
+			if(strcmp(A,find_name)==0)
+			{
+				u.show_data();
+				temp = 1;
+			}	
+		}
+		if(temp==0)
+		{
+			cout<<"No Patient!";
+		}
+		infile.close();
+		cout<<"Try again?";cin>>ans;
+	}while(ans=='y');
+	
+}
+
+void update_data()
+{
+	Users u1,u2;
+	char edit_name[20];
+	
+	ans = 'y';
+	int tempo = 0;
+	char* B = u1.getname();
+	ifstream infile;	
+	
+	while(ans == 'y')
+	{
+		cout<<"\nEnter Patient's Name U want to Update:";cin>>edit_name;
+		infile.open("Users.txt",ios::out);
+			
+		while(infile.read((char*)&u1,sizeof(u1)))
+		{
+			if(strcmp(B,edit_name)!=0)
+			{	tempo = 1 ;	}
+			else
+			{	tempo = 0 ;break;	}
+		}
+		
+		if (tempo == 1) 
+		{
+			cout<<"Patient does not exist!";
+			infile.close();	
+			
+			cout<<"Try again?";cin>>ans;
+			if(ans == 'y')
+			{	continue;	}
+			else
+			{	break;	}	
+		}
+			
+		infile.close();	
+		
+		infile.open("Users.txt",ios::out);
+		ofstream outfile("Second.txt",ios::app);
+		u2.request_data();
+			
+		while(infile.read((char*)&u1,sizeof(u1)))
+		{
+			if(strcmp(B,edit_name)==0)
+			{	outfile.write((char*)&u2,sizeof(u2));	}
+			else
+			{	outfile.write((char*)&u1,sizeof(u1));		}	
+		}	
+		
+		cout<<"\nData Updated Successfully\n";
+		infile.close();
+		outfile.close();
+			
+		remove("Users.txt");
+		rename("Second.txt","Users.txt");
+		
+		cout<<"Try again?";cin>>ans;
+	}
+		
+}
